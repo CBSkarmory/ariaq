@@ -1,2 +1,7 @@
 venv
 .idea
+*.sqlite
+*.log
+*~
+.firstrun
+__pycache__
