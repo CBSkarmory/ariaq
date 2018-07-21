@@ -3,12 +3,12 @@
 usage: ./ariaq.py [command] [args]
 commands:
     add [link] [num]
-    setpath [path]
+    status
     help
 """
 
 import sqlite3
-import os.path
+import os
 import sys
 import logging
 from logging import debug, info, warning, error
@@ -16,20 +16,62 @@ from __init__ import *
 
 cmds = {
     'add': {'add', 'a'},
-    'setpath': {'setpath'}
+    'status': {'status'}
 }
 
 logging.basicConfig(filename='ariaq.log', level=logging.INFO)
 
 
+def get_status_message(c: sqlite3.Connection) -> str:
+    num_jobs: int = c.execute("SELECT COUNT(num) FROM Tasks").fetchone()[0]
+    message = [
+        f'Output Path: {OUT_PATH}',
+        f'Output Format: {FILE_PREFIX}[num].{FILE_SUFFIX}',
+        f'{num_jobs} Jobs in the queue'
+    ]
+    return '\n'.join(message)
+
+
+
+def add_job(link: str, num: str, c: sqlite3.Connection) -> None:
+    """
+    usage of [add] command:
+    ./ariaq.py add [link] [num]
+    """
+
+    # defensive programming
+    try:
+        int(str)
+    except ValueError:
+        error_msg = 'invalid number for num in [add] command, aborting'
+        warning(error_msg)
+        raise ValueError(error_msg)
+
+    hyp_filename = f'{FILE_PREFIX}{num}.{FILE_SUFFIX}'
+    if os.path.isfile(hyp_filename):
+        error_msg = f'file: {hyp_filename} already exists, aborting'
+        warning(error_msg)
+        raise ValueError(error_msg)
+
+    duplicate_num = bool(c.execute(
+        "SELECT COUNT(num) from Tasks WHERE num=?", (num,)
+    ).fetchone()[0])
+    if duplicate_num:
+        error_msg = f'Illegal repeated use of num: {num}, aborting'
+        warning(error_msg)
+        raise ValueError(error_msg)
+
+    info(f'adding job with num: {num}')
+
+
 def main():
-    debug(sys.argv)
-    # handle cmds
+    debug(f'argv is {sys.argv}')
     argv = sys.argv
     argc = len(argv)
 
     if argc < 2 or argv[1] == 'help':
         print(__doc__)
+        sys.exit(0)
 
     conn = sqlite3.connect(DB)
     c = conn.cursor()
@@ -40,9 +82,12 @@ def main():
 
     cmd = argv[1]
     if cmd in cmds['add']:
-        pass
-    elif cmd in cmds['setpath']:
-        pass
+        if argc != 4:
+            print(add_job.__doc__)
+        else:
+            add_job(argv[3], argv[4])
+    elif cmd in cmds['status']:
+        print(get_status_message(conn))
     else:
         error_msg = f'Unrecognized command: {cmd}'
         error(error_msg)
