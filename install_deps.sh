@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-pip install pytest
 pip install pytest-cov
-pip install dotenv
+pip install python-dotenv
 cp src/.env.example src/.env
