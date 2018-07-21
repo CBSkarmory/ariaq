@@ -2,4 +2,6 @@ language: python
 python:
  - "3.6.5"
 install: ./install_deps.sh
+brfore_script: pip install codecov
 script: python3 -m pytest --cov=./
+after_success: codecov
