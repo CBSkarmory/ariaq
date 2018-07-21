@@ -72,7 +72,7 @@ def add_job(link: str, num: str, conn: sqlite3.Connection) -> None:
         raise
 
 
-def main():
+def main():  # pragma: no cover
     debug(f'argv is {sys.argv}')
     argv = sys.argv
     argc = len(argv)

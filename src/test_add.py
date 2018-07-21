@@ -1,7 +1,8 @@
 import sqlite3
-
 import pytest
-
+import os.path
+if os.path.isdir('src'):
+    os.chdir('src')
 import ariaq
 from __init__ import *
 
