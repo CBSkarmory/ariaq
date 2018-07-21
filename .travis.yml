@@ -1,0 +1,3 @@
+language: python
+install: ./install_deps.sh
+script: python3 -m pytest
