@@ -1,6 +1,5 @@
 language: python
 python:
  - "3.6.5"
- - "3.7"
-install: ./install_deps.sh
+install: sudo ./install_deps.sh
 script: python3 -m pytest
