@@ -5,4 +5,4 @@ venv
 *~
 .firstrun
 __pycache__
-.env
+src/.env

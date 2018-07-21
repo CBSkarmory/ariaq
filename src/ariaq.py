@@ -8,7 +8,7 @@ commands:
 """
 
 import sqlite3
-import os
+import os.path
 import sys
 import logging
 from logging import debug, info, warning, error
@@ -32,8 +32,7 @@ def get_status_message(c: sqlite3.Connection) -> str:
     return '\n'.join(message)
 
 
-
-def add_job(link: str, num: str, c: sqlite3.Connection) -> None:
+def add_job(link: str, num: str, conn: sqlite3.Connection) -> None:
     """
     usage of [add] command:
     ./ariaq.py add [link] [num]
@@ -48,12 +47,13 @@ def add_job(link: str, num: str, c: sqlite3.Connection) -> None:
         raise ValueError(error_msg)
 
     hyp_filename = f'{FILE_PREFIX}{num}.{FILE_SUFFIX}'
-    if os.path.isfile(hyp_filename):
-        error_msg = f'file: {hyp_filename} already exists, aborting'
+    hyp_full_filename = f'{OUT_PATH}{hyp_filename}'
+    if os.path.isfile(hyp_full_filename):
+        error_msg = f'file: {hyp_filename} already exists in {OUT_PATH}, aborting'
         warning(error_msg)
         raise ValueError(error_msg)
 
-    duplicate_num = bool(c.execute(
+    duplicate_num = bool(conn.execute(
         "SELECT COUNT(num) from Tasks WHERE num=?", (num,)
     ).fetchone()[0])
     if duplicate_num:
@@ -85,7 +85,7 @@ def main():
         if argc != 4:
             print(add_job.__doc__)
         else:
-            add_job(argv[3], argv[4])
+            add_job(argv[3], argv[4], conn)
     elif cmd in cmds['status']:
         print(get_status_message(conn))
     else:
