@@ -3,6 +3,9 @@ venv
 *.sqlite
 *.log
 *~
+*.pyc
 .firstrun
 __pycache__
 src/.env
+.cache/
+.pytest_cache/

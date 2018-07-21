@@ -7,11 +7,12 @@ commands:
     help
 """
 
-import sqlite3
-import os.path
-import sys
 import logging
+import os.path
+import sqlite3
+import sys
 from logging import debug, info, warning, error
+
 from __init__ import *
 
 cmds = {
@@ -40,9 +41,9 @@ def add_job(link: str, num: str, conn: sqlite3.Connection) -> None:
 
     # defensive programming
     try:
-        int(str)
+        int(num)
     except ValueError:
-        error_msg = 'invalid number for num in [add] command, aborting'
+        error_msg = f'invalid arg: ({num}) for num in [add] command, aborting'
         warning(error_msg)
         raise ValueError(error_msg)
 
@@ -62,6 +63,13 @@ def add_job(link: str, num: str, conn: sqlite3.Connection) -> None:
         raise ValueError(error_msg)
 
     info(f'adding job with num: {num}')
+    try:
+        conn.execute('''INSERT INTO Tasks
+                        VALUES (?, ?)''', (link, num))
+        conn.commit()
+    except sqlite3.OperationalError as e:
+        error(e.__traceback__)
+        raise
 
 
 def main():
@@ -74,11 +82,10 @@ def main():
         sys.exit(0)
 
     conn = sqlite3.connect(DB)
-    c = conn.cursor()
 
     # check for first run
     if not os.path.isfile(FIRSTRUN_FILE):
-        setup(c, conn)
+        setup(conn)
 
     cmd = argv[1]
     if cmd in cmds['add']:
@@ -94,9 +101,9 @@ def main():
         raise ValueError(error_msg)
 
 
-def setup(c: sqlite3.Cursor, conn: sqlite3.Connection) -> None:
+def setup(conn: sqlite3.Connection) -> None:
     debug("First run detected, creating Tasks table in DB")
-    c.execute('''CREATE TABLE Tasks
+    conn.execute('''CREATE TABLE Tasks
                  (link text, num int)''')
     conn.commit()
     with open(FIRSTRUN_FILE, 'w') as firstrun:
