@@ -8,15 +8,6 @@ from __init__ import *
 import ariaq
 
 
-def extract_num_jobs(status: str) -> int:
-    match = extract_num_jobs.rxp.match(status)
-    if match:
-        return int(match.group(1))
-
-
-extract_num_jobs.rxp = re.compile('.*[^\d](\d+) job\(s\) in', re.DOTALL)
-
-
 def setup_function(function):
     global DB
     DB = os.getenv("TEST_DB_NAME")
@@ -32,14 +23,20 @@ def teardown_function(function):
         log.write('[logfile cleared after test run]')
 
 
-def test_status_0():
-    actual_jobs = 0
+def test_poll_0():
     link = "https://example.com"
     with sqlite3.connect(DB) as conn:
-        status = ariaq.get_status_message(conn)
-        assert actual_jobs == extract_num_jobs(status)
-        for _ in range(15):
-            actual_jobs += 1
-            ariaq.add_job(link, str(actual_jobs), conn)
-            status = ariaq.get_status_message(conn)
-            assert actual_jobs == extract_num_jobs(status)
+        for job_num in range(15):
+            ariaq.add_job(link, str(job_num).zfill(2), conn)
+        order = sorted(map(lambda x: str(x).zfill(2), range(15)))
+        for job_num in order:
+            curr = ariaq.poll(conn)
+            assert curr
+            assert len(curr) == 2
+            assert curr[0] == link
+            assert curr[1] == str(job_num)
+
+
+def test_poll_1():  # empty case
+    with sqlite3.connect(DB) as conn:
+        assert ariaq.poll(conn) is None

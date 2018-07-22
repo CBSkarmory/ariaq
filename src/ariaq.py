@@ -11,6 +11,7 @@ import logging
 import os.path
 import sqlite3
 import sys
+from typing import Tuple, Union
 from logging import debug, info, warning, error
 
 from __init__ import *
@@ -24,8 +25,32 @@ cmds = {
 logging.basicConfig(filename=os.getenv("LOGFILE_NAME"), level=logging.INFO)
 
 
-def get_status_message(conn: sqlite3.Connection) -> str:
+def _get_num_jobs(conn: sqlite3.Connection) -> int:
     num_jobs: int = conn.execute("SELECT COUNT(num) FROM Tasks").fetchone()[0]
+    return num_jobs
+
+
+def _get_highest_priority(conn: sqlite3.Connection) -> str:
+    min_key = conn.execute("SELECT  min(num) FROM Tasks").fetchone()[0]
+    if not min_key:
+        return ""
+    else:
+        return min_key
+
+
+def poll(conn: sqlite3.Connection) -> Union[Tuple[str, str], type(None)]:
+    min_key = _get_highest_priority(conn)
+    if not min_key:
+        return None
+    else:
+        ret: Tuple[str, str] = conn.execute("SELECT * FROM Tasks WHERE num=?", (min_key,)).fetchone()
+        conn.execute("DELETE FROM Tasks WHERE num=?", (min_key,))
+        conn.commit()
+        return ret
+
+
+def get_status_message(conn: sqlite3.Connection) -> str:
+    num_jobs: int = _get_num_jobs(conn)
     message = [
         f'Output Path: {OUT_PATH}',
         f'Output Format: {FILE_PREFIX}[num].{FILE_SUFFIX}',
@@ -82,32 +107,33 @@ def main():  # pragma: no cover
         print(__doc__)
         sys.exit(0)
 
-    conn = sqlite3.connect(DB)
-
     # check for first run
     if not os.path.isfile(FIRSTRUN_FILE):
-        setup(conn)
+        setup()
 
-    cmd = argv[1]
+    cmd: str = argv[1]
     if cmd in cmds['add']:
         if argc != 4:
             print(add_job.__doc__)
         else:
-            add_job(argv[2], argv[3], conn)
+            with sqlite3.connect(DB) as conn:
+                add_job(argv[2], argv[3], conn)
     elif cmd in cmds['status']:
-        print(get_status_message(conn))
+        with sqlite3.connect(DB) as conn:
+            print(get_status_message(conn))
     else:
         print(f'Unrecognized command: {cmd}')
         print(__doc__)
 
 
-def setup(conn: sqlite3.Connection) -> None:
-    debug("First run detected, creating Tasks table in DB")
-    conn.execute('''CREATE TABLE Tasks
-                 (link text, num text)''')
-    conn.commit()
-    with open(FIRSTRUN_FILE, 'w') as firstrun:
-        firstrun.write('first run')
+def setup() -> None:
+    with sqlite3.connect(DB) as conn:
+        debug("First run detected, creating Tasks table in DB")
+        conn.execute('''CREATE TABLE Tasks
+                        (link text, num text)''')
+        with open(FIRSTRUN_FILE, 'w') as firstrun:
+            firstrun.write('first run')
+        conn.commit()
 
 
 if __name__ == '__main__':  # pragma: no cover
