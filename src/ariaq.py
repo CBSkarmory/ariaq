@@ -17,18 +17,19 @@ from __init__ import *
 
 cmds = {
     'add': {'add', 'a'},
-    'status': {'status'}
+    'status': {'status'},
+    'help': {'--help', 'help'}
 }
 
-logging.basicConfig(filename='ariaq.log', level=logging.INFO)
+logging.basicConfig(filename=os.getenv("LOGFILE_NAME"), level=logging.INFO)
 
 
-def get_status_message(c: sqlite3.Connection) -> str:
-    num_jobs: int = c.execute("SELECT COUNT(num) FROM Tasks").fetchone()[0]
+def get_status_message(conn: sqlite3.Connection) -> str:
+    num_jobs: int = conn.execute("SELECT COUNT(num) FROM Tasks").fetchone()[0]
     message = [
         f'Output Path: {OUT_PATH}',
         f'Output Format: {FILE_PREFIX}[num].{FILE_SUFFIX}',
-        f'{num_jobs} Jobs in the queue'
+        f'{num_jobs} job(s) in the queue'
     ]
     return '\n'.join(message)
 
@@ -77,7 +78,7 @@ def main():  # pragma: no cover
     argv = sys.argv
     argc = len(argv)
 
-    if argc < 2 or argv[1] == 'help':
+    if argc < 2 or argv[1] in cmds["help"]:
         print(__doc__)
         sys.exit(0)
 
@@ -96,9 +97,8 @@ def main():  # pragma: no cover
     elif cmd in cmds['status']:
         print(get_status_message(conn))
     else:
-        error_msg = f'Unrecognized command: {cmd}'
-        error(error_msg)
-        raise ValueError(error_msg)
+        print(f'Unrecognized command: {cmd}')
+        print(__doc__)
 
 
 def setup(conn: sqlite3.Connection) -> None:

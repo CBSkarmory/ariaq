@@ -1,22 +1,26 @@
 import sqlite3
 import pytest
 import os.path
+
 if os.path.isdir('src'):
     os.chdir('src')
-import ariaq
 from __init__ import *
+import ariaq
+
 
 
 def setup_function(function):
     global DB
-    DB = "ariaq_test.sqlite"
+    DB = os.getenv("TEST_DB_NAME")
+    os.remove(DB)
     with sqlite3.connect(DB) as conn:
-        try:
-            conn.execute("DROP TABLE Tasks")
-        except sqlite3.OperationalError:
-            pass  # already DNE
         conn.execute("CREATE TABLE Tasks (link text, num text)")
         conn.commit()
+
+
+def teardown_function(function):
+    with open(os.getenv("LOGFILE_NAME"), 'w') as log:
+        log.write('[logfile cleared after test run]')
 
 
 def test_add_0():  # expected input
