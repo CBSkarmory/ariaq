@@ -93,7 +93,7 @@ def main():  # pragma: no cover
         if argc != 4:
             print(add_job.__doc__)
         else:
-            add_job(argv[3], argv[4], conn)
+            add_job(argv[2], argv[3], conn)
     elif cmd in cmds['status']:
         print(get_status_message(conn))
     else:
@@ -104,7 +104,7 @@ def main():  # pragma: no cover
 def setup(conn: sqlite3.Connection) -> None:
     debug("First run detected, creating Tasks table in DB")
     conn.execute('''CREATE TABLE Tasks
-                 (link text, num int)''')
+                 (link text, num text)''')
     conn.commit()
     with open(FIRSTRUN_FILE, 'w') as firstrun:
         firstrun.write('first run')
