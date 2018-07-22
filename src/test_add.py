@@ -12,7 +12,8 @@ import ariaq
 def setup_function(function):
     global DB
     DB = os.getenv("TEST_DB_NAME")
-    os.remove(DB)
+    if os.path.isfile(DB):
+        os.remove(DB)
     with sqlite3.connect(DB) as conn:
         conn.execute("CREATE TABLE Tasks (link text, num text)")
         conn.commit()
