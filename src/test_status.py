@@ -2,7 +2,7 @@ import sqlite3
 import re
 import os.path
 
-if os.path.isdir('src'):
+if os.path.isdir('src'):  # pragma: no cover
     os.chdir('src')
 from __init__ import *
 import ariaq
@@ -20,7 +20,7 @@ num_jobs.rxp = re.compile('.*[^\d](\d+) job\(s\) in', re.DOTALL)
 def setup_function(function):
     global DB
     DB = os.getenv("TEST_DB_NAME")
-    if os.path.isfile(DB):
+    if os.path.isfile(DB):  # pragma: no cover
         os.remove(DB)
     with sqlite3.connect(DB) as conn:
         conn.execute("CREATE TABLE Tasks (link text, num text)")
