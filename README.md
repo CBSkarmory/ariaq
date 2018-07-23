@@ -1,7 +1,7 @@
 # ariaq
 [![Build Status](https://travis-ci.org/CBSkarmory/ariaq.png)](https://travis-ci.org/CBSkarmory/ariaq)
 [![codecov](https://codecov.io/gh/CBSkarmory/ariaq/branch/master/graph/badge.svg)](https://codecov.io/gh/CBSkarmory/ariaq)
-
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Dependencies
 ------------
@@ -27,6 +27,8 @@ and making sure no errors occur.
 
 Usage
 -----
+#### Setup
+Create a `.env` file modeled after `.env.example`
 
 #### Core
 
