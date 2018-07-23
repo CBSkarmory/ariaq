@@ -10,6 +10,7 @@ commands:
 import logging
 import os.path
 import sqlite3
+import subprocess
 import sys
 from typing import Tuple, Union
 from logging import debug, info, warning, error
@@ -19,10 +20,12 @@ from __init__ import *
 cmds = {
     'add': {'add', 'a'},
     'status': {'status'},
+    'start': {'start'},
     'help': {'--help', 'help'}
 }
 
 logging.basicConfig(filename=os.getenv("LOGFILE_NAME"), level=logging.INFO)
+logging.getLogger().addHandler(logging.StreamHandler())
 
 
 def _get_num_jobs(conn: sqlite3.Connection) -> int:
@@ -36,6 +39,37 @@ def _get_highest_priority(conn: sqlite3.Connection) -> str:
         return ""
     else:
         return min_key
+
+
+def start_working(db_name) -> list:
+    failed_jobs = []
+    info("Starting a worker")
+    # go until queue is empty
+    while True:
+        with sqlite3.connect(db_name) as conn:
+            curr_job = poll(conn)
+        if not curr_job:
+            break
+        link, num = curr_job
+        filename = f'{FILE_PREFIX}{num}.{FILE_SUFFIX}'
+        full_filename = f'{OUT_PATH}{filename}'
+        info(f'Starting download job num {num}')
+        p = subprocess.run([
+            'aria2c',
+            '-x 16',
+            '-s 8',
+            f'{link}',
+            f'-o {full_filename}'
+        ], stdout=subprocess.DEVNULL)  # suppress output
+        if p.returncode:
+            warning(f'Attempt to download num {num} failed, skipping')
+            failed_jobs.append((link, num))
+        else:
+            info(f'Download of num: {num} completed')
+    info("Queue is empty, stopping")
+    if len(failed_jobs) > 0:
+        info(f'failed jobs: {failed_jobs}')
+    return failed_jobs
 
 
 def poll(conn: sqlite3.Connection) -> Union[Tuple[str, str], type(None)]:
@@ -112,15 +146,21 @@ def main():  # pragma: no cover
         setup()
 
     cmd: str = argv[1]
+
     if cmd in cmds['add']:
         if argc != 4:
             print(add_job.__doc__)
         else:
             with sqlite3.connect(DB) as conn:
                 add_job(argv[2], argv[3], conn)
+
     elif cmd in cmds['status']:
         with sqlite3.connect(DB) as conn:
             print(get_status_message(conn))
+
+    elif cmd in cmds['start']:
+        start_working(DB)
+
     else:
         print(f'Unrecognized command: {cmd}')
         print(__doc__)

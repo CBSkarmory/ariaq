@@ -4,7 +4,7 @@ import os
 load_dotenv(find_dotenv())
 
 OUT_PATH = os.getenv("OUT_PATH")
-if OUT_PATH != "" and OUT_PATH[-1] != '/':
+if OUT_PATH != "" and OUT_PATH[-1] != '/':  # pragma: no cover
     OUT_PATH += '/'
 
 FILE_PREFIX = os.getenv("FILE_PREFIX")

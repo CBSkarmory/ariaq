@@ -1,5 +1,4 @@
 import sqlite3
-import re
 import os.path
 
 if os.path.isdir('src'):  # pragma: no cover
@@ -20,7 +19,7 @@ def setup_function(function):
 
 def teardown_function(function):
     with open(os.getenv("LOGFILE_NAME"), 'w') as log:
-        log.write('[logfile cleared after test run]')
+        log.write('[logfile cleared after test run]\n')
 
 
 def test_poll_0():

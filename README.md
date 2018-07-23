@@ -7,8 +7,9 @@ Dependencies
 ------------
 
 #### Core
-- Python 3.6.5+
-- python-dotenv
+- [Python 3.6.5+](https://www.python.org/downloads/)
+- [python-dotenv](https://github.com/theskumar/python-dotenv)
+- [aria2](https://github.com/aria2/aria2)
 #### Tests
 - pytest-cov
 - codecov
@@ -34,7 +35,10 @@ Adding a job
 ```
 ./ariaq.py add [link] [num]
 ```
-
+Starting a worker
+```
+./ariaq.py start
+```
 
 
 #### Tests
