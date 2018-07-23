@@ -44,8 +44,9 @@ def test_dl_0():
     assert len(fails) == 0
     for job_num in range(3):
         filename = f'{FILE_PREFIX}{str(job_num)}.{FILE_SUFFIX}'
-        assert correct_hash == md5(filename)
-        os.remove(filename)
+        full_filename = f'{OUT_PATH}{filename}'
+        assert correct_hash == md5(full_filename)
+        os.remove(full_filename)
 
 
 def test_dl_1():  # bad protocol
