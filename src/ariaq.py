@@ -57,9 +57,10 @@ def start_working(db_name) -> list:
         p = subprocess.run([
             'aria2c',
             '-x 16',
-            '-s 8',
-            f'{link}',
-            f'-o {full_filename}'
+            '-s 6',
+            str(link),
+            '-o',
+            str(full_filename)
         ], stdout=subprocess.DEVNULL)  # suppress output
         if p.returncode:
             warning(f'Attempt to download num {num} failed, skipping')
