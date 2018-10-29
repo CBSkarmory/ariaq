@@ -3,7 +3,7 @@ python:
  - "3.6.5"
 before_install:
  - cp .env.example .env
- - sudo apt install aria2
+ - sudo apt-get install aria2
 install: ./install_deps.sh
 script: python3 -m pytest --cov=./
 after_success: python3 -m codecov
