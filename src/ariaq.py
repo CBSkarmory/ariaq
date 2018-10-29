@@ -7,15 +7,14 @@ commands:
     help
 """
 
-import logging
+import logging as lg
 import os.path
 import sqlite3
 import subprocess
 import sys
 from typing import Tuple, Union
-from logging import debug, info, warning, error
 
-from __init__ import *
+from constants import *
 
 cmds = {
     'add': {'add', 'a'},
@@ -24,8 +23,8 @@ cmds = {
     'help': {'--help', 'help'}
 }
 
-logging.basicConfig(filename=os.getenv("LOGFILE_NAME"), level=logging.INFO)
-logging.getLogger().addHandler(logging.StreamHandler())
+lg.basicConfig(filename=os.getenv("LOGFILE_NAME"), level=lg.INFO)
+lg.getLogger().addHandler(lg.StreamHandler())
 
 
 def _get_num_jobs(conn: sqlite3.Connection) -> int:
@@ -43,7 +42,7 @@ def _get_highest_priority(conn: sqlite3.Connection) -> str:
 
 def start_working(db_name) -> list:
     failed_jobs = []
-    info("Starting a worker")
+    lg.info("Starting a worker")
     # go until queue is empty
     while True:
         with sqlite3.connect(db_name) as conn:
@@ -53,7 +52,7 @@ def start_working(db_name) -> list:
         link, num = curr_job
         filename = f'{FILE_PREFIX}{num}.{FILE_SUFFIX}'
         full_filename = f'{OUT_PATH}{filename}'
-        info(f'Starting download job num {num}')
+        lg.info(f'Starting download job num {num}')
         p = subprocess.run([
             'aria2c',
             '-x 16',
@@ -63,13 +62,13 @@ def start_working(db_name) -> list:
             str(full_filename)
         ], stdout=subprocess.DEVNULL)  # suppress output
         if p.returncode:
-            warning(f'Attempt to download num {num} failed, skipping')
+            lg.warning(f'Attempt to download num {num} failed, skipping')
             failed_jobs.append((link, num))
         else:
-            info(f'Download of num: {num} completed')
-    info("Queue is empty, stopping")
+            lg.info(f'Download of num: {num} completed')
+    lg.info("Queue is empty, stopping")
     if len(failed_jobs) > 0:
-        info(f'failed jobs: {failed_jobs}')
+        lg.info(f'failed jobs: {failed_jobs}')
     return failed_jobs
 
 
@@ -105,14 +104,14 @@ def add_job(link: str, num: str, conn: sqlite3.Connection) -> None:
         int(num)
     except ValueError:
         error_msg = f'invalid arg: ({num}) for num in [add] command, aborting'
-        warning(error_msg)
+        lg.warning(error_msg)
         raise ValueError(error_msg)
 
     hyp_filename = f'{FILE_PREFIX}{num}.{FILE_SUFFIX}'
     hyp_full_filename = f'{OUT_PATH}{hyp_filename}'
     if os.path.isfile(hyp_full_filename):
         error_msg = f'file: {hyp_filename} already exists in {OUT_PATH}, aborting'
-        warning(error_msg)
+        lg.warning(error_msg)
         raise ValueError(error_msg)
 
     duplicate_num = bool(conn.execute(
@@ -120,21 +119,21 @@ def add_job(link: str, num: str, conn: sqlite3.Connection) -> None:
     ).fetchone()[0])
     if duplicate_num:
         error_msg = f'Illegal repeated use of num: {num}, aborting'
-        warning(error_msg)
+        lg.warning(error_msg)
         raise ValueError(error_msg)
 
-    info(f'adding job with num: {num}')
+    lg.info(f'adding job with num: {num}')
     try:
         conn.execute('''INSERT INTO Tasks
                         VALUES (?, ?)''', (link, num))
         conn.commit()
     except sqlite3.OperationalError as e:
-        error(e.__traceback__)
+        lg.error(e.__traceback__)
         raise
 
 
 def main():  # pragma: no cover
-    debug(f'argv is {sys.argv}')
+    lg.debug(f'argv is {sys.argv}')
     argv = sys.argv
     argc = len(argv)
 
@@ -169,7 +168,7 @@ def main():  # pragma: no cover
 
 def setup() -> None:
     with sqlite3.connect(DB) as conn:
-        debug("First run detected, creating Tasks table in DB")
+        lg.debug("First run detected, creating Tasks table in DB")
         conn.execute('''CREATE TABLE Tasks
                         (link text, num text)''')
         with open(FIRSTRUN_FILE, 'w') as firstrun:

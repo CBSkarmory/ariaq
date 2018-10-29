@@ -4,7 +4,7 @@ import os.path
 
 if os.path.isdir('src'):  # pragma: no cover
     os.chdir('src')
-from __init__ import *
+from constants import *
 import ariaq
 
 
