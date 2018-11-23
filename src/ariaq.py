@@ -4,6 +4,7 @@ usage: ./ariaq.py [command] [args]
 commands:
     add [link] [num]
     status
+    start
     help
 """
 
