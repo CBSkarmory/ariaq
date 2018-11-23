@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 """
 usage: ./ariaq.py [command] [args]
 commands:
