@@ -1,7 +1,7 @@
 # ariaq
 [![Build Status](https://travis-ci.org/CBSkarmory/ariaq.png)](https://travis-ci.org/CBSkarmory/ariaq)
 [![codecov](https://codecov.io/gh/CBSkarmory/ariaq/branch/master/graph/badge.svg)](https://codecov.io/gh/CBSkarmory/ariaq)
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 Dependencies
 ------------
@@ -11,19 +11,24 @@ Dependencies
 - [python-dotenv](https://github.com/theskumar/python-dotenv)
 - [aria2](https://github.com/aria2/aria2)
 #### Tests
-- pytest-cov
-- codecov
+- [pytest-cov](https://pypi.org/project/pytest-cov/)
+- [codecov](https://pypi.org/project/codecov/)
 
 To install python dependencies,
+``` bash
+pip3 install -r requirements.txt
 ```
+
+or 
+
+``` bash
 pip3 install python-dotenv pytest-cov codecov
 ``` 
 
-Make sure sqlite3 module is installed 
-(should be built in to python) with
-`echo "import sqlite3" | python3`
-and making sure no errors occur.
-
+To get aria2,
+``` bash
+sudo apt install aira2
+```
 
 Usage
 -----
