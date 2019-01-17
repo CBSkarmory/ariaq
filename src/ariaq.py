@@ -78,8 +78,10 @@ def poll(conn: sqlite3.Connection) -> Union[Tuple[str, str], type(None)]:
     if not min_key:
         return None
     else:
+        conn.execute("BEGIN TRANSACTION;")
         ret: Tuple[str, str] = conn.execute("SELECT * FROM Tasks WHERE num=?", (min_key,)).fetchone()
         conn.execute("DELETE FROM Tasks WHERE num=?", (min_key,))
+        conn.execute("COMMIT;")
         conn.commit()
         return ret
 
@@ -144,7 +146,10 @@ def main():  # pragma: no cover
 
     # check for first run
     if not os.path.isfile(FIRSTRUN_FILE):
-        setup()
+        lg.debug("First run detected, creating Tasks table in DB")
+        setup(DB)
+        with open(FIRSTRUN_FILE, 'w') as firstrun:
+            firstrun.write('first run')
 
     cmd: str = argv[1]
 
@@ -167,13 +172,9 @@ def main():  # pragma: no cover
         print(__doc__)
 
 
-def setup() -> None:
-    with sqlite3.connect(DB) as conn:
-        lg.debug("First run detected, creating Tasks table in DB")
-        conn.execute('''CREATE TABLE Tasks
-                        (link text, num text)''')
-        with open(FIRSTRUN_FILE, 'w') as firstrun:
-            firstrun.write('first run')
+def setup(database: str) -> None:
+    with sqlite3.connect(database) as conn:
+        conn.execute("CREATE TABLE Tasks (link text, num text)")
         conn.commit()
 
 

@@ -1,6 +1,7 @@
-import sqlite3
-import pytest
 import os.path
+import sqlite3
+
+import pytest
 
 if os.path.isdir('src'):  # pragma: no cover
     os.chdir('src')
@@ -13,12 +14,11 @@ def setup_function(function):
     DB = os.getenv("TEST_DB_NAME")
     if os.path.isfile(DB):  # pragma: no cover
         os.remove(DB)
-    with sqlite3.connect(DB) as conn:
-        conn.execute("CREATE TABLE Tasks (link text, num text)")
-        conn.commit()
+    ariaq.setup(DB)
 
 
 def teardown_function(function):
+    os.remove(DB)
     with open(os.getenv("LOGFILE_NAME"), 'w') as log:
         log.write('[logfile cleared after test run]\n')
 
