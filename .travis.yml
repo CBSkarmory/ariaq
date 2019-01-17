@@ -1,9 +1,16 @@
-language: python
-python:
- - "3.6.5"
-before_install:
+matrix:
+  include:
+    - python: "3.6.5"
+    - python: "3.7"
+      dist: xenial
+      sudo: true
+addons:
+  apt:
+    packages:
+    - aria2
+install:
+   - pip install -r requirements.txt
+before_script:
  - cp .env.example .env
- - sudo apt-get install aria2
-install: ./install_deps.sh
 script: python3 -m pytest --cov=./
 after_success: python3 -m codecov
