@@ -14,7 +14,7 @@ def extract_num_jobs(status: str) -> int:
         return int(match.group(1))
 
 
-extract_num_jobs.rxp = re.compile('.*[^\d](\d+) job\(s\) in', re.DOTALL)
+extract_num_jobs.rxp = re.compile(r'.*[^\d](\d+) job\(s\) in', re.DOTALL)
 
 
 def setup_function(function):
