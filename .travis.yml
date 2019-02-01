@@ -1,17 +1,20 @@
 language: python
 matrix:
-  include:
-    - python: "3.6.5"
-    - python: "3.7"
-      dist: xenial
-      sudo: true
+    include:
+        - python: "3.6.5"
+        - python: "3.7"
+        sudo: true
+os:
+    - linux
+    dist: xenial
+    - osx
 addons:
-  apt:
-    packages:
-    - aria2
+    apt:
+        packages:
+            - aria2
 install:
-   - pip install -r requirements.txt
+    - pip install -r requirements.txt
 before_script:
- - cp .env.example .env
+    - cp .env.example .env
 script: python3 -m pytest --cov=./
 after_success: python3 -m codecov
