@@ -9,6 +9,9 @@ addons:
   apt:
     packages:
     - aria2
+cache:
+    - /usr/bin
+    - pip
 install:
    - pip install -r requirements.txt
 before_script:
